@@ -43,7 +43,7 @@ ssh $SERVER << 'EOF'
     sudo tar -xzf /tmp/free-pdf.tar.gz
     
     echo "📚 Bağımlılıklar kuruluyor..."
-    sudo npm install
+    sudo npm install --legacy-peer-deps
     
     echo "🏗️  Build oluşturuluyor..."
     sudo npm run build

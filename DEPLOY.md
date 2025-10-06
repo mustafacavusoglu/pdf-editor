@@ -46,8 +46,8 @@ sudo tar -xzf /tmp/free-pdf.tar.gz
 ```bash
 cd /var/www/free-pdf
 
-# Bağımlılıkları kurun
-npm install
+# Bağımlılıkları kurun (--legacy-peer-deps ile)
+npm install --legacy-peer-deps
 
 # Production build oluşturun
 npm run build
@@ -156,13 +156,13 @@ cd /var/www/free-pdf
 
 # Git ile (Seçenek A)
 git pull
-npm install
+npm install --legacy-peer-deps
 npm run build
 pm2 restart free-pdf
 
 # SCP ile (Seçenek B)
 # Yeni dosyaları aktarın ve tekrar build edin
-npm install
+npm install --legacy-peer-deps
 npm run build
 pm2 restart free-pdf
 ```
@@ -188,7 +188,7 @@ sudo kill -9 <PID>
 ```bash
 # Node_modules'ü temizle
 rm -rf node_modules package-lock.json
-npm install
+npm install --legacy-peer-deps
 npm run build
 ```
 

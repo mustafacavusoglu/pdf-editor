@@ -72,7 +72,11 @@ Aşağıdaki içeriği yapıştırın:
 ```nginx
 server {
     listen 80;
-    server_name your-domain.com;  # Domain adınızı yazın veya IP adresinizi
+    # Seçenekler:
+    # 1. Domain varsa: server_name example.com www.example.com;
+    # 2. Sadece IP: server_name 123.45.67.89;
+    # 3. Hepsi için: server_name _;
+    server_name _;  # Tüm istekleri kabul eder
 
     location / {
         proxy_pass http://localhost:3000;

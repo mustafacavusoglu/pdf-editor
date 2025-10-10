@@ -3,15 +3,16 @@
 import type React from "react"
 
 import { useCallback, useState } from "react"
-import { Upload, FileText } from "lucide-react"
+import { Upload, FileText, ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 
 interface FileUploadProps {
   onFileSelect: (file: File) => void
+  onBack?: () => void
 }
 
-export function FileUpload({ onFileSelect }: FileUploadProps) {
+export function FileUpload({ onFileSelect, onBack }: FileUploadProps) {
   const [isDragging, setIsDragging] = useState(false)
 
   const handleDrop = useCallback(
@@ -51,6 +52,19 @@ export function FileUpload({ onFileSelect }: FileUploadProps) {
 
   return (
     <div className="mx-auto max-w-3xl">
+      {onBack && (
+        <div className="mb-4">
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={onBack}
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Ana Sayfaya Dön
+          </Button>
+        </div>
+      )}
+      
       <div className="mb-8 text-center">
         <h2 className="mb-3 text-3xl font-bold text-balance text-foreground md:text-4xl">PDF Dosyanızı Yükleyin</h2>
         <p className="text-lg text-muted-foreground text-pretty">

@@ -28,6 +28,7 @@ export function SignatureDialog({ open, onOpenChange, onSave }: SignatureDialogP
   const [activeTab, setActiveTab] = useState<"draw" | "upload">("draw")
   const [savedSignatures, setSavedSignatures] = useState<string[]>([])
   const [selectedSignature, setSelectedSignature] = useState<string | null>(null)
+  const [penColor, setPenColor] = useState<string>("#000000")
 
   useEffect(() => {
     if (open && canvasRef.current && activeTab === "draw") {
@@ -107,7 +108,7 @@ export function SignatureDialog({ open, onOpenChange, onSave }: SignatureDialogP
     const ctx = canvas.getContext("2d")
     if (ctx) {
       ctx.lineTo(x, y)
-      ctx.strokeStyle = "#000000"
+      ctx.strokeStyle = penColor
       ctx.lineWidth = 2
       ctx.lineCap = "round"
       ctx.stroke()
@@ -176,7 +177,7 @@ export function SignatureDialog({ open, onOpenChange, onSave }: SignatureDialogP
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>İmza Ekle</DialogTitle>
           <DialogDescription>İmzanızı çizin, yükleyin veya kayıtlı imzalarınızdan seçin</DialogDescription>
@@ -212,8 +213,37 @@ export function SignatureDialog({ open, onOpenChange, onSave }: SignatureDialogP
               />
             </div>
 
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={clearCanvas} className="flex-1 bg-transparent">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium">Renk:</span>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setPenColor("#000000")}
+                    className={`h-8 w-8 rounded-full border-2 ${
+                      penColor === "#000000" ? "border-primary ring-2 ring-primary ring-offset-2" : "border-gray-300"
+                    }`}
+                    style={{ backgroundColor: "#000000" }}
+                    title="Siyah"
+                  />
+                  <button
+                    onClick={() => setPenColor("#0000FF")}
+                    className={`h-8 w-8 rounded-full border-2 ${
+                      penColor === "#0000FF" ? "border-primary ring-2 ring-primary ring-offset-2" : "border-gray-300"
+                    }`}
+                    style={{ backgroundColor: "#0000FF" }}
+                    title="Mavi"
+                  />
+                  <button
+                    onClick={() => setPenColor("#FF0000")}
+                    className={`h-8 w-8 rounded-full border-2 ${
+                      penColor === "#FF0000" ? "border-primary ring-2 ring-primary ring-offset-2" : "border-gray-300"
+                    }`}
+                    style={{ backgroundColor: "#FF0000" }}
+                    title="Kırmızı"
+                  />
+                </div>
+              </div>
+              <Button variant="outline" onClick={clearCanvas} className="flex-1 sm:flex-initial bg-transparent">
                 <Trash2 className="mr-2 h-4 w-4" />
                 Temizle
               </Button>

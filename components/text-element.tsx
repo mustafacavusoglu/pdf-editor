@@ -52,16 +52,17 @@ export function TextElement({ item, onUpdate, onDelete, isSelected, onSelect }: 
     })
   }
 
-  const handleResizeStart = (e: React.MouseEvent) => {
+  const handleResizeStart = (e: React.MouseEvent | React.TouchEvent) => {
     e.stopPropagation()
     e.preventDefault()
     setIsResizing(true)
     
-    const startY = e.clientY
+    const startY = 'touches' in e ? e.touches[0].clientY : e.clientY
     const startFontSize = item.fontSize
     
-    const handleResizeMove = (moveEvent: MouseEvent) => {
-      const deltaY = moveEvent.clientY - startY
+    const handleResizeMove = (moveEvent: MouseEvent | TouchEvent) => {
+      const currentY = 'touches' in moveEvent ? moveEvent.touches[0].clientY : moveEvent.clientY
+      const deltaY = currentY - startY
       const newFontSize = Math.max(8, Math.min(200, startFontSize + deltaY / 2))
       
       onUpdate({
@@ -72,12 +73,16 @@ export function TextElement({ item, onUpdate, onDelete, isSelected, onSelect }: 
     
     const handleResizeEnd = () => {
       setIsResizing(false)
-      document.removeEventListener('mousemove', handleResizeMove)
+      document.removeEventListener('mousemove', handleResizeMove as EventListener)
       document.removeEventListener('mouseup', handleResizeEnd)
+      document.removeEventListener('touchmove', handleResizeMove as EventListener)
+      document.removeEventListener('touchend', handleResizeEnd)
     }
     
-    document.addEventListener('mousemove', handleResizeMove)
+    document.addEventListener('mousemove', handleResizeMove as EventListener)
     document.addEventListener('mouseup', handleResizeEnd)
+    document.addEventListener('touchmove', handleResizeMove as EventListener, { passive: false })
+    document.addEventListener('touchend', handleResizeEnd)
   }
 
   return (
@@ -136,8 +141,9 @@ export function TextElement({ item, onUpdate, onDelete, isSelected, onSelect }: 
                 <div className="absolute -top-1 -right-1 h-3 w-3 rounded-full border-2 border-primary bg-white" />
                 <div className="absolute -bottom-1 -left-1 h-3 w-3 rounded-full border-2 border-primary bg-white" />
                 <div
-                  className="absolute -bottom-1 -right-1 h-3 w-3 cursor-ns-resize rounded-full border-2 border-primary bg-white"
+                  className="absolute -bottom-1 -right-1 h-4 w-4 sm:h-3 sm:w-3 cursor-ns-resize rounded-full border-2 border-primary bg-white touch-none"
                   onMouseDown={handleResizeStart}
+                  onTouchStart={handleResizeStart}
                   style={{ touchAction: 'none' }}
                 />
               </>
@@ -146,7 +152,7 @@ export function TextElement({ item, onUpdate, onDelete, isSelected, onSelect }: 
             <Button
               size="sm"
               variant="destructive"
-              className={`absolute -right-8 -top-2 h-6 w-6 p-0 transition-opacity ${
+              className={`absolute -right-7 sm:-right-8 -top-2 h-7 w-7 sm:h-6 sm:w-6 p-0 transition-opacity ${
                 isHovered ? 'opacity-100' : 'opacity-0'
               }`}
               onClick={(e) => {
@@ -154,7 +160,7 @@ export function TextElement({ item, onUpdate, onDelete, isSelected, onSelect }: 
                 onDelete()
               }}
             >
-              <X className="h-3 w-3" />
+              <X className="h-4 w-4 sm:h-3 sm:w-3" />
             </Button>
           </div>
         )}

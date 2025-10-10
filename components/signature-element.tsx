@@ -49,19 +49,22 @@ export function SignatureElement({ item, onUpdate, onDelete, isSelected, onSelec
     })
   }
 
-  const handleResizeStart = (e: React.MouseEvent) => {
+  const handleResizeStart = (e: React.MouseEvent | React.TouchEvent) => {
     e.stopPropagation()
     e.preventDefault()
     setIsResizing(true)
     
-    const startX = e.clientX
-    const startY = e.clientY
+    const startX = 'touches' in e ? e.touches[0].clientX : e.clientX
+    const startY = 'touches' in e ? e.touches[0].clientY : e.clientY
     const startWidth = item.width
     const startHeight = item.height
     
-    const handleResizeMove = (moveEvent: MouseEvent) => {
-      const deltaX = moveEvent.clientX - startX
-      const deltaY = moveEvent.clientY - startY
+    const handleResizeMove = (moveEvent: MouseEvent | TouchEvent) => {
+      const currentX = 'touches' in moveEvent ? moveEvent.touches[0].clientX : moveEvent.clientX
+      const currentY = 'touches' in moveEvent ? moveEvent.touches[0].clientY : moveEvent.clientY
+      
+      const deltaX = currentX - startX
+      const deltaY = currentY - startY
       
       // Use the larger delta to maintain aspect ratio
       const delta = Math.max(deltaX, deltaY)
@@ -78,12 +81,16 @@ export function SignatureElement({ item, onUpdate, onDelete, isSelected, onSelec
     
     const handleResizeEnd = () => {
       setIsResizing(false)
-      document.removeEventListener('mousemove', handleResizeMove)
+      document.removeEventListener('mousemove', handleResizeMove as EventListener)
       document.removeEventListener('mouseup', handleResizeEnd)
+      document.removeEventListener('touchmove', handleResizeMove as EventListener)
+      document.removeEventListener('touchend', handleResizeEnd)
     }
     
-    document.addEventListener('mousemove', handleResizeMove)
+    document.addEventListener('mousemove', handleResizeMove as EventListener)
     document.addEventListener('mouseup', handleResizeEnd)
+    document.addEventListener('touchmove', handleResizeMove as EventListener, { passive: false })
+    document.addEventListener('touchend', handleResizeEnd)
   }
 
   const handleCropStart = (e: React.MouseEvent) => {
@@ -149,17 +156,20 @@ export function SignatureElement({ item, onUpdate, onDelete, isSelected, onSelec
     }
   }
 
-  const handleCropDrag = (corner: 'tl' | 'tr' | 'bl' | 'br', e: React.MouseEvent) => {
+  const handleCropDrag = (corner: 'tl' | 'tr' | 'bl' | 'br', e: React.MouseEvent | React.TouchEvent) => {
     e.stopPropagation()
     e.preventDefault()
 
-    const startX = e.clientX
-    const startY = e.clientY
+    const startX = 'touches' in e ? e.touches[0].clientX : e.clientX
+    const startY = 'touches' in e ? e.touches[0].clientY : e.clientY
     const startCrop = { ...cropArea }
 
-    const handleDragMove = (moveEvent: MouseEvent) => {
-      const deltaX = moveEvent.clientX - startX
-      const deltaY = moveEvent.clientY - startY
+    const handleDragMove = (moveEvent: MouseEvent | TouchEvent) => {
+      const currentX = 'touches' in moveEvent ? moveEvent.touches[0].clientX : moveEvent.clientX
+      const currentY = 'touches' in moveEvent ? moveEvent.touches[0].clientY : moveEvent.clientY
+      
+      const deltaX = currentX - startX
+      const deltaY = currentY - startY
 
       let newCrop = { ...startCrop }
 
@@ -190,12 +200,16 @@ export function SignatureElement({ item, onUpdate, onDelete, isSelected, onSelec
     }
 
     const handleDragEnd = () => {
-      document.removeEventListener('mousemove', handleDragMove)
+      document.removeEventListener('mousemove', handleDragMove as EventListener)
       document.removeEventListener('mouseup', handleDragEnd)
+      document.removeEventListener('touchmove', handleDragMove as EventListener)
+      document.removeEventListener('touchend', handleDragEnd)
     }
 
-    document.addEventListener('mousemove', handleDragMove)
+    document.addEventListener('mousemove', handleDragMove as EventListener)
     document.addEventListener('mouseup', handleDragEnd)
+    document.addEventListener('touchmove', handleDragMove as EventListener, { passive: false })
+    document.addEventListener('touchend', handleDragEnd)
   }
 
   return (
@@ -251,28 +265,33 @@ export function SignatureElement({ item, onUpdate, onDelete, isSelected, onSelec
             >
               {/* Crop handles */}
               <div
-                className="crop-handle absolute -top-2 -left-2 h-4 w-4 cursor-nwse-resize rounded-full border-2 border-white bg-primary"
+                className="crop-handle absolute -top-2 -left-2 h-5 w-5 sm:h-4 sm:w-4 cursor-nwse-resize rounded-full border-2 border-white bg-primary touch-none"
                 onMouseDown={(e) => handleCropDrag('tl', e)}
+                onTouchStart={(e) => handleCropDrag('tl', e)}
               />
               <div
-                className="crop-handle absolute -top-2 -right-2 h-4 w-4 cursor-nesw-resize rounded-full border-2 border-white bg-primary"
+                className="crop-handle absolute -top-2 -right-2 h-5 w-5 sm:h-4 sm:w-4 cursor-nesw-resize rounded-full border-2 border-white bg-primary touch-none"
                 onMouseDown={(e) => handleCropDrag('tr', e)}
+                onTouchStart={(e) => handleCropDrag('tr', e)}
               />
               <div
-                className="crop-handle absolute -bottom-2 -left-2 h-4 w-4 cursor-nesw-resize rounded-full border-2 border-white bg-primary"
+                className="crop-handle absolute -bottom-2 -left-2 h-5 w-5 sm:h-4 sm:w-4 cursor-nesw-resize rounded-full border-2 border-white bg-primary touch-none"
                 onMouseDown={(e) => handleCropDrag('bl', e)}
+                onTouchStart={(e) => handleCropDrag('bl', e)}
               />
               <div
-                className="crop-handle absolute -bottom-2 -right-2 h-4 w-4 cursor-nwse-resize rounded-full border-2 border-white bg-primary"
+                className="crop-handle absolute -bottom-2 -right-2 h-5 w-5 sm:h-4 sm:w-4 cursor-nwse-resize rounded-full border-2 border-white bg-primary touch-none"
                 onMouseDown={(e) => handleCropDrag('br', e)}
+                onTouchStart={(e) => handleCropDrag('br', e)}
               />
             </div>
             
             {/* Crop controls */}
-            <div className="crop-controls absolute -bottom-12 left-1/2 -translate-x-1/2 flex gap-2">
+            <div className="crop-controls absolute -bottom-14 sm:-bottom-12 left-1/2 -translate-x-1/2 flex gap-2">
               <Button
                 size="sm"
                 variant="default"
+                className="text-xs sm:text-sm px-3 sm:px-4"
                 onClick={(e) => {
                   e.stopPropagation()
                   handleApplyCrop()
@@ -283,6 +302,7 @@ export function SignatureElement({ item, onUpdate, onDelete, isSelected, onSelec
               <Button
                 size="sm"
                 variant="outline"
+                className="text-xs sm:text-sm px-3 sm:px-4"
                 onClick={(e) => {
                   e.stopPropagation()
                   setIsCropping(false)
@@ -302,8 +322,9 @@ export function SignatureElement({ item, onUpdate, onDelete, isSelected, onSelec
             <div className="absolute -top-1 -right-1 h-3 w-3 rounded-full border-2 border-primary bg-white" />
             <div className="absolute -bottom-1 -left-1 h-3 w-3 rounded-full border-2 border-primary bg-white" />
             <div
-              className="absolute -bottom-1 -right-1 h-3 w-3 cursor-nwse-resize rounded-full border-2 border-primary bg-white"
+              className="absolute -bottom-1 -right-1 h-4 w-4 sm:h-3 sm:w-3 cursor-nwse-resize rounded-full border-2 border-primary bg-white touch-none"
               onMouseDown={handleResizeStart}
+              onTouchStart={handleResizeStart}
               style={{ touchAction: 'none' }}
             />
             
@@ -311,11 +332,11 @@ export function SignatureElement({ item, onUpdate, onDelete, isSelected, onSelec
             <Button
               size="sm"
               variant="outline"
-              className="absolute -top-10 left-1/2 -translate-x-1/2 h-8 w-8 p-0 bg-white border-2 border-primary hover:bg-primary hover:text-white"
+              className="absolute -top-10 sm:-top-10 left-1/2 -translate-x-1/2 h-9 w-9 sm:h-8 sm:w-8 p-0 bg-white border-2 border-primary hover:bg-primary hover:text-white"
               onClick={handleCropStart}
               title="Kırp"
             >
-              <Scissors className="h-4 w-4" />
+              <Scissors className="h-4 w-4 sm:h-4 sm:w-4" />
             </Button>
           </>
         )}
@@ -323,7 +344,7 @@ export function SignatureElement({ item, onUpdate, onDelete, isSelected, onSelec
         <Button
           size="sm"
           variant="destructive"
-          className={`absolute -right-8 -top-2 h-6 w-6 p-0 transition-opacity ${
+          className={`absolute -right-7 sm:-right-8 -top-2 h-7 w-7 sm:h-6 sm:w-6 p-0 transition-opacity ${
             isHovered && !isCropping ? 'opacity-100' : 'opacity-0'
           }`}
           onClick={(e) => {
@@ -331,7 +352,7 @@ export function SignatureElement({ item, onUpdate, onDelete, isSelected, onSelec
             onDelete()
           }}
         >
-          <X className="h-3 w-3" />
+          <X className="h-4 w-4 sm:h-3 sm:w-3" />
         </Button>
       </div>
     </Draggable>

@@ -60,6 +60,24 @@ export function PDFEditor({ file, onBack }: PDFEditorProps) {
     return () => URL.revokeObjectURL(url)
   }, [file])
 
+  // Mobil ekran için scale ayarı
+  useEffect(() => {
+    const updateScale = () => {
+      const width = window.innerWidth
+      if (width < 640) { // mobil
+        setScale(0.5)
+      } else if (width < 1024) { // tablet
+        setScale(0.8)
+      } else { // desktop
+        setScale(1.2)
+      }
+    }
+
+    updateScale()
+    window.addEventListener('resize', updateScale)
+    return () => window.removeEventListener('resize', updateScale)
+  }, [])
+
   // Handle keyboard shortcuts for copy/paste
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -257,10 +275,12 @@ export function PDFEditor({ file, onBack }: PDFEditorProps) {
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+    <div className="flex flex-col gap-2 sm:gap-4 p-2 sm:p-0">
+      <div className="flex flex-col gap-2 sm:gap-4 sm:flex-row sm:items-center sm:justify-between">
         <Button 
           variant="outline" 
+          size="sm"
+          className="w-full sm:w-auto"
           onClick={() => {
             // Temizleme işlemi ve geri dönme
             setTextElements([]);
@@ -270,21 +290,31 @@ export function PDFEditor({ file, onBack }: PDFEditorProps) {
           }}
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Geri Dön
+          Ana Sayfaya Dön
         </Button>
 
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2">
-            <Button variant="ghost" size="sm" onClick={() => setScale(Math.max(0.5, scale - 0.1))}>
+        <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-2">
+          <div className="flex items-center justify-center gap-1 sm:gap-2 rounded-lg border border-border bg-card px-2 sm:px-3 py-1.5 sm:py-2">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => setScale(Math.max(0.3, scale - 0.1))}
+              disabled={scale <= 0.3}
+            >
               <ZoomOut className="h-4 w-4" />
             </Button>
-            <span className="text-sm font-medium text-foreground">{Math.round(scale * 100)}%</span>
-            <Button variant="ghost" size="sm" onClick={() => setScale(Math.min(2, scale + 0.1))}>
+            <span className="text-xs sm:text-sm font-medium text-foreground min-w-[3rem] text-center">{Math.round(scale * 100)}%</span>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => setScale(Math.min(2.5, scale + 0.1))}
+              disabled={scale >= 2.5}
+            >
               <ZoomIn className="h-4 w-4" />
             </Button>
           </div>
 
-          <Button onClick={handleDownload} size="lg">
+          <Button onClick={handleDownload} size="sm" className="w-full sm:w-auto sm:size-lg">
             <Download className="mr-2 h-4 w-4" />
             PDF'i İndir
           </Button>
@@ -303,7 +333,7 @@ export function PDFEditor({ file, onBack }: PDFEditorProps) {
       />
 
       <Card className="overflow-hidden">
-        <div className="relative bg-muted/30 p-4 md:p-8">
+        <div className="relative bg-muted/30 p-2 sm:p-4 md:p-8 overflow-auto">
           <div
             ref={containerRef}
             className="relative mx-auto cursor-crosshair bg-white shadow-lg"
@@ -311,7 +341,7 @@ export function PDFEditor({ file, onBack }: PDFEditorProps) {
               handleCanvasClick(e)
               setSelectedElement(null)
             }}
-            style={{ width: "fit-content" }}
+            style={{ width: "fit-content", maxWidth: "100%" }}
           >
             <Document file={pdfUrl} onLoadSuccess={onDocumentLoadSuccess}>
               <Page 
@@ -360,19 +390,21 @@ export function PDFEditor({ file, onBack }: PDFEditorProps) {
           </div>
 
           {numPages > 1 && (
-            <div className="mt-6 flex items-center justify-center gap-4">
+            <div className="mt-4 sm:mt-6 flex items-center justify-center gap-2 sm:gap-4">
               <Button
                 variant="outline"
+                size="sm"
                 onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                 disabled={currentPage === 1}
               >
                 Önceki
               </Button>
-              <span className="text-sm text-foreground">
+              <span className="text-xs sm:text-sm text-foreground whitespace-nowrap">
                 Sayfa {currentPage} / {numPages}
               </span>
               <Button
                 variant="outline"
+                size="sm"
                 onClick={() => setCurrentPage(Math.min(numPages, currentPage + 1))}
                 disabled={currentPage === numPages}
               >
